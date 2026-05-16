@@ -1,0 +1,14 @@
+<h1 style="text-align: center;">URL Shortener</h1>
+<div style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; text-align: center ; background-color: lightcyan;">
+ <p style="background-color: aquamarine; width: 15%; text-align: center; margin: 0 auto; border-radius: 20px;">Enter a URL to shorten:</p>
+
+<form method="POST" style="display: inline-block; margin-top: 10px;" class="url-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" style="background-color: rgb(152, 152, 231); color: rgb(32, 24, 24); height: 30px; border-radius: 10px;">Shorten</button>
+</form>
+
+{% if short_url %}
+    <p>Your shortened URL: <a href="{{ short_url }}">{{ short_url }}</a></p>
+{% endif %}
+</div>

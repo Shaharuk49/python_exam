@@ -23,7 +23,7 @@ def index(request):
             short_url = f"{request.build_absolute_uri('/')}{slug}"
     else:
         form = ShortenUrlForm()
-    return render(request, '/index.html', {'form': form, 'short_url': short_url})
+    return render(request, 'task/index.html', {'form': form, 'short_url': short_url})
 
 @login_required
 def dashboard_view(request):
