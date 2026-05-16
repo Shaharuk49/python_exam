@@ -1,0 +1,9 @@
+<h2>Welcome to your Dashboard, {{ user.username }}!</h2>
+<p>Your visit to this URL has been tracked.</p>
+<nav>
+    <a href="{% url 'tester' %}">View My Hit History</a> | 
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</nav>

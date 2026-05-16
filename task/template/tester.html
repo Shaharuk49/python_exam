@@ -1,0 +1,14 @@
+<h2> URL Hit History</h2>
+<ul>
+    <thead>
+        <td>
+            <li>hit track:<strong>urls</strong>on time</li>    
+        </td>
+    </thead>
+    {% for hit in hits %}
+        <li>Tracked the hit:<strong>{{ hit.url_path }}</strong> on {{ hit.timestamp }}</li>
+    {% empty %}
+        <li>No hits recorded yet.</li>
+    {% endfor %}
+</ul>
+<p><a href="{% url 'dashboard' %}">Back to Dashboard</a></p>
