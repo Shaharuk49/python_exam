@@ -1,9 +1,9 @@
 {% if single_view %}
   
-    <h2>Analytics for Slug: {{ url_data.slug }}</h2>
-    <p><strong>Destination:</strong> <a href="{{ url_data.url }}">{{ url_data.url }}</a></p>
-    <p><strong>Total Recorded Clicks:</strong> {{ url_data.total_clicks }}</p>
-    <p><a href="{% url 'dashboard_list' %}">← Back to All Links</a></p>
+    <h2 style="text-align: center; color: #641818;">Analytics for Slug: {{ url_data.slug }}</h2>
+    
+    <p style="text-align: center; "><strong>Total Recorded Clicks:</strong> {{ url_data.total_clicks }}</p>
+   <button style="display: block; margin: 0 auto; background-color: bisque; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px;"><a href="{% url 'dashboard_list' %}">Back</a></button>
 
     <h3>Detailed Click Stream</h3>
     <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
@@ -41,7 +41,7 @@
 
 {% else %}
    
-    <h2>All Shortened URLs Overview</h2>
+    <h2 style="margin-top: 20px; text-align: center; background-color: #f2f2f2; padding: 10px;">All Shortened URLs Overview</h2>
     <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
         <thead>
             <tr style="background-color: #e2e2e2;">
@@ -51,14 +51,14 @@
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody style="background-color:palegoldenrod;">
             {% for item in all_urls %}
             <tr>
                 <td>{{ item.time|date:"Y-m-d H:i" }}</td>
                 <td>/{{ item.slug }}</td>
                 <td>{{ item.total_clicks }}</td>
                 <td>
-                    <a href="{% url 'dashboard_detail' item.slug %}">View Detailed Analytics</a>
+                    <a href="{% url 'dashboard_detail' item.slug %}">View Details</a>
                 </td>
             </tr>
             {% empty %}

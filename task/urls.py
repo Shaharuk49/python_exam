@@ -8,6 +8,6 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('dashboard/', views.dashboard_view, name='dashboard_list'),
     path('dashboard/<slug:slug>/', views.dashboard_view, name='dashboard_detail'),
-    path('r/<slug:slug>/', views.redirect_and_track, name='redirect_and_track'),
-    path('redirect/', views.redirect_url, name='redirect_url'),
+    # path('r/<slug:slug>/', views.redirect_and_track, name='redirect_and_track'),
+    path('<slug:slug>/', views.redirect_url, name='redirect_url'),
 ]
