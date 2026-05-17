@@ -1,36 +1,71 @@
-<div>
-    <h1 style="text-align: center;">Dashboard</h1>
-    <table style="width: 100%; border-collapse: collapse;">
+{% if single_view %}
+  
+    <h2>Analytics for Slug: {{ url_data.slug }}</h2>
+    <p><strong>Destination:</strong> <a href="{{ url_data.url }}">{{ url_data.url }}</a></p>
+    <p><strong>Total Recorded Clicks:</strong> {{ url_data.total_clicks }}</p>
+    <p><a href="{% url 'dashboard_list' %}">← Back to All Links</a></p>
+
+    <h3>Detailed Click Stream</h3>
+    <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
         <thead>
-            <tr>
-                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Short URL</th>
-                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Total Clicks</th>
-                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">IP Address</th>
-                 <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">User Agent</th>
-                 <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Referer</th>
+            <tr style="background-color: #f2f2f2;">
+                <th>Time</th>
+                <th>IP Address</th>
+                <th>User Account</th>
+                <th>Referrer</th>
+                <th>User Agent</th>
             </tr>
         </thead>
         <tbody>
-</div>
+            {% for click in recent_clicks %}
+            <tr>
+                <td>{{ click.timestamp|date:"Y-m-d H:i:s" }}</td>
+                <td>{{ click.ip_address|default:"Hidden/Unknown" }}</td>
+                <td>{{ click.user.username|default:"Anonymous Visitor" }}</td>
+                <td>
+                    {% if click.refer %}
+                        <a href="{{ click.refer }}" target="_blank">{{ click.refer }}</a>
+                    {% else %}
+                        Direct / No Referrer
+                    {% endif %}
+                </td>
+                <td style="font-size: 0.85em; color: #555;">{{ click.user_agent }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center;">No traffic has been tracked yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-{% for url in urls %}
-    <tr>
-        <td>{{ url.slug }}</td> 
-        <td><strong>{{ url.total_clicks }}</strong></td> 
-        <td>
-            {% for click in url.clickanalytics_set.all %}
-                {{ click.ip_address }}<br>
+{% else %}
+   
+    <h2>All Shortened URLs Overview</h2>
+    <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr style="background-color: #e2e2e2;">
+                <th>Created Time</th>
+                <th>Slug Link</th>
+                <th>Total Clicks</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in all_urls %}
+            <tr>
+                <td>{{ item.time|date:"Y-m-d H:i" }}</td>
+                <td>/{{ item.slug }}</td>
+                <td>{{ item.total_clicks }}</td>
+                <td>
+                    <a href="{% url 'dashboard_detail' item.slug %}">View Detailed Analytics</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center;">No shortened links exist yet.</td>
+            </tr>
             {% endfor %}
-        </td>
-        <td>
-            {% for click in url.clickanalytics_set.all %}
-                {{ click.user_agent }}<br>
-            {% endfor %}
-        </td>
-        <td>
-            {% for click in url.clickanalytics_set.all %}
-                {{ click.refer }}<br>
-            {% endfor %}
-        </td>
-    </tr>
-{% endfor %}
+        </tbody>
+    </table>
+{% endif %}

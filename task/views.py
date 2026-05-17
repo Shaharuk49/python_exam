@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import F
 import uuid
 from .forms import ShortenUrlForm
 from .models import UrlData, ClickAnalytics
-from django.db.models import Count
 
 def index(request):
     short_url = None
@@ -18,43 +18,57 @@ def index(request):
         form = ShortenUrlForm()
     return render(request, 'task/index.html', {'form': form, 'short_url': short_url})
 
-def redirect_url(request, slug):
-    short_url_obj = get_object_or_404(UrlData, slug=slug)
-    return redirect(short_url_obj.url)
+# def redirect_url(request, slug):
+#     url_data = get_object_or_404(UrlData, slug=slug)
+#     return redirect(url_data.url)
 
 
 def redirect_and_track(request, slug):
-  
-    short_url_obj = get_object_or_404(UrlData, slug=slug)
-    ip_address = request.META.get('REMOTE_ADDR')
-    x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded:
-        ip = x_forwarded.split(',')[0]
+    url_data = get_object_or_404(UrlData, slug=slug)
+
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0].strip()
     else:
-        ip = ip_address
+        ip = request.META.get('REMOTE_ADDR')
 
-    
-    agent = request.META.get('HTTP_USER_AGENT', '')
-    referer = request.META.get('HTTP_REFERER', '') 
- 
+    user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Agent')
+    referrer = request.META.get('HTTP_REFERER', None) 
+
+    current_user = request.user if request.user.is_authenticated else None
+
     ClickAnalytics.objects.create(
-        short_url=short_url_obj,
+        user=current_user,
+        short_url=url_data,
         ip_address=ip,
-        user_agent=agent,
-        refer=referer
+        user_agent=user_agent,
+        refer=referrer
     )
-    
-    return redirect(short_url_obj.url)
 
-# def dashboard_view(request):
-#     urls = UrlData.objects.all()
-#     clicks = ClickAnalytics.objects.all()
-#     return render(request, 'task/dashboard.html', {'urls': urls, 'clicks': clicks})
+    url_data.total_clicks = F('total_clicks') + 1
+    url_data.save()
+
+    return redirect(url_data.url)
 
 
-from django.db.models import Count
-
-def dashboard_view(request):
-    urls = UrlData.objects.annotate(total_clicks=Count('clicks'))
-    return render(request, 'task/dashboard.html', {'urls': urls})
-
+def dashboard_view(request, slug=None):
+    if slug:
+      
+        url_data = get_object_or_404(UrlData, slug=slug)
+        recent_clicks = url_data.clicks.all().order_by('-timestamp')[:100]
+        
+        context = {
+            'url_data': url_data,
+            'recent_clicks': recent_clicks,
+            'single_view': True,
+        }
+    else:
+        
+        all_urls = UrlData.objects.all().order_by('-time')
+        
+        context = {
+            'all_urls': all_urls,
+            'single_view': False,
+        }
+        
+    return render(request, 'task/dashboard.html', context)
