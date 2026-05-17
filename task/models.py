@@ -10,3 +10,16 @@ class UrlData(models.Model):
 
     def __str__(self):
         return self.url
+    
+
+class ClickAnalytics(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    short_url = models.ForeignKey(UrlData, on_delete=models.CASCADE, related_name='clicks')
+    click_count = models.IntegerField(default=0)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True) 
+    refer = models.URLField(null=True, blank=True, max_length=500)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Click on {self.short_url.slug} at {self.timestamp}"

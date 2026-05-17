@@ -1,15 +1,8 @@
-from django.shortcuts import render,redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse # Added to show the error message
+from django.shortcuts import render, redirect, get_object_or_404
 import uuid
-from task.forms import ShortenUrlForm
-from task.models import UrlData
-from .forms import ShortenUrlForm   
-from .models import UrlData
-
-
-
-
+from .forms import ShortenUrlForm
+from .models import UrlData, ClickAnalytics
+from django.db.models import Count
 
 def index(request):
     short_url = None
@@ -25,32 +18,43 @@ def index(request):
         form = ShortenUrlForm()
     return render(request, 'task/index.html', {'form': form, 'short_url': short_url})
 
-@login_required
-def dashboard_view(request):
-
-    UrlData.objects.create(user=request.user, url_path=request.path)
-    return render(request, 'task/dashboard.html')
-
-
-@login_required
-def tester_view(request):
-    user_hits = UrlData.objects.filter(user=request.user).order_by('-timestamp')
-    if user_hits.count() >= 3:
-        
-        return HttpResponse("You can't show this time", status=403,)
-    
-    UrlData.objects.create(user=request.user, url_path=request.path)
-    
-    return render(request, 'task/tester.html', {'tasks': user_hits})
-
-
-
-
-
 def redirect_url(request, slug):
-    url_details = UrlData.objects.get(slug=slug)
-    return redirect(url_details.url)
+    short_url_obj = get_object_or_404(UrlData, slug=slug)
+    return redirect(short_url_obj.url)
 
 
-def demo_view(request):
-    return render(request, '/demo.html')    
+def redirect_and_track(request, slug):
+  
+    short_url_obj = get_object_or_404(UrlData, slug=slug)
+    ip_address = request.META.get('REMOTE_ADDR')
+    x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded:
+        ip = x_forwarded.split(',')[0]
+    else:
+        ip = ip_address
+
+    
+    agent = request.META.get('HTTP_USER_AGENT', '')
+    referer = request.META.get('HTTP_REFERER', '') 
+ 
+    ClickAnalytics.objects.create(
+        short_url=short_url_obj,
+        ip_address=ip,
+        user_agent=agent,
+        refer=referer
+    )
+    
+    return redirect(short_url_obj.url)
+
+# def dashboard_view(request):
+#     urls = UrlData.objects.all()
+#     clicks = ClickAnalytics.objects.all()
+#     return render(request, 'task/dashboard.html', {'urls': urls, 'clicks': clicks})
+
+
+from django.db.models import Count
+
+def dashboard_view(request):
+    urls = UrlData.objects.annotate(total_clicks=Count('clicks'))
+    return render(request, 'task/dashboard.html', {'urls': urls})
+

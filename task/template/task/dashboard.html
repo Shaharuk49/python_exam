@@ -1,9 +1,36 @@
-<h2>Welcome to your Dashboard, {{ user.username }}!</h2>
-<p>Your visit to this URL has been tracked.</p>
-<nav>
-    <a href="{% url 'tester' %}">View My Hit History</a> | 
-    <form action="{% url 'logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-    </form>
-</nav>
+<div>
+    <h1 style="text-align: center;">Dashboard</h1>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Short URL</th>
+                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Total Clicks</th>
+                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">IP Address</th>
+                 <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">User Agent</th>
+                 <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Referer</th>
+            </tr>
+        </thead>
+        <tbody>
+</div>
+
+{% for url in urls %}
+    <tr>
+        <td>{{ url.slug }}</td> 
+        <td><strong>{{ url.total_clicks }}</strong></td> 
+        <td>
+            {% for click in url.clickanalytics_set.all %}
+                {{ click.ip_address }}<br>
+            {% endfor %}
+        </td>
+        <td>
+            {% for click in url.clickanalytics_set.all %}
+                {{ click.user_agent }}<br>
+            {% endfor %}
+        </td>
+        <td>
+            {% for click in url.clickanalytics_set.all %}
+                {{ click.refer }}<br>
+            {% endfor %}
+        </td>
+    </tr>
+{% endfor %}
